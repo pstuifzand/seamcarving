@@ -197,7 +197,7 @@ void find_path(const buffer<f32>& energies, const buffer<u8>& choice, u32 x, f32
     }
 }
 
-bool remove_path(buffer<u8>& image, const buffer<u8>& choice, u32 x, u32 draw)
+void remove_path(buffer<u8>& image, const buffer<u8>& choice, u32 x)
 {
     u32 y = 0;
 
@@ -210,13 +210,7 @@ bool remove_path(buffer<u8>& image, const buffer<u8>& choice, u32 x, u32 draw)
         auto f1 = i_row + (x + 1) * bpp(image);
         auto l  = i_row + pitch(image);
 
-        if (draw) {
-            *(f0) = 0;
-            *(f0+1) = 0;
-            *(f0+2) = 0;
-        } else {
-            std::copy(f1, l, f0);
-        }
+        std::copy(f1, l, f0);
 
         //assert(c_row[x] == 0 || c_row[x] == 1 || c_row[x] == 2);
 
@@ -231,13 +225,6 @@ bool remove_path(buffer<u8>& image, const buffer<u8>& choice, u32 x, u32 draw)
         // next y
         y++;
     }
-
-    //set_pitch(image, pitch(image) - bpp(image));
-    if (!draw) {
-        set_width(image, width(image) - 1);
-        return true;
-    }
-    return false;
 }
 
 void calculate_paths(const buffer<f32>& in, buffer<u8>& out)
@@ -291,9 +278,13 @@ void GameUpdateAndRender(game_memory* memory, float delta, buffer<u8>& screen)
 
         calculate_paths(edges, choice);
         u32 x = find_minimum_path(edges, choice);
-        remove_path(memory->original, choice, x, 0);
+        remove_path(memory->original, choice, x);
+
+        // decrease width of images (pitch stays the same)
+        set_width(memory->original, width(memory->original)-1);
         set_width(edges, width(edges)-1);
         set_width(choice, width(choice)-1);
+
         memory->remove--;
     }
 
