@@ -157,12 +157,13 @@ void edge_detect_w(const buffer<T>& in, buffer<f32>& out)
     const u32 w = width(in) - 2;
 
     for (u32 x = 1; x < w; ++x) {
-        f32* dst = row(out, 0) + bpp(out);
+        f32* dst = row(out, 0) + (x+1) * bpp(out);
+
         op_row3_n(src0, src1, src2, pitch(in), height(in), dst, pitch(out), energy<const u8*>{bpp(in)});
 
         src0 = src1;
         src1 = src2;
-        src2 = row(in, 0) + x + 1;
+        src2 = row(in, 0) + (x+1) * bpp(in);
     }
 }
 
